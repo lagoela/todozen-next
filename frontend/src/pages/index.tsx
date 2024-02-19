@@ -36,6 +36,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { todo } from "node:test";
+import { Label } from "@/components/ui/label";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -49,10 +50,11 @@ const todos: Todo[] = [];
 
 export default function Home() {
   const [taskValue, setTaskValue] = useState<string>("");
+  const [taskEditValue, setTaskEditValue] = useState<string>("");
   const [todoList, setTodoList] = useState<Todo[]>(todos);
   const [taskPlaceholder, setTaskPlaceholder] =
     useState<string>("Add a new task...");
-  
+
   const createNewTask = (_formEvent: { preventDefault: () => void }) => {
     if (!taskValue) {
       _formEvent.preventDefault();
@@ -73,7 +75,17 @@ export default function Home() {
   const deleteTask = (id: number) => {
     const updatedTodoList = todoList.filter((item) => item.id !== id);
     setTodoList(updatedTodoList);
-  }
+  };
+
+  const editTask = (id: number) => {
+    const itemToEdit = todoList.filter((item) => item.id === id);
+    const updatedTodoList = todoList.filter((item) => item.id !== id);
+    const editedItem: Todo = {
+      id: id,
+      task: itemToEdit[0].task,
+      completed: itemToEdit[0].completed,
+    };
+  };
 
   return (
     <main className="bg-black flex flex-col h-screen">
@@ -107,16 +119,41 @@ export default function Home() {
                         <PencilSimple
                           size={16}
                           className="text-white cursor-pointer"
+                          onClick={(e) => {
+                            editTask(item.id);
+                          }}
                         />
                       </PopoverTrigger>
-                      <PopoverContent>
-                        <div className="space-y-2">
-                          <h4 className="font-medium leading-none">
-                            Edit task
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            Change task details.
-                          </p>
+                      <PopoverContent className="bg-zinc-900">
+                        <div className="grid gap-4">
+                          <div className="space-y-2">
+                            <h4 className="font-medium leading-none text-white">
+                              Edit task
+                            </h4>
+                            <p className="text-sm text-muted-foreground text-zinc-400">
+                              Change task details.
+                            </p>
+                          </div>
+                          <form
+                            onSubmit={(e) => {
+                              alert(`Task updated to ${taskEditValue}`);
+                              e.preventDefault();
+                            }}
+                            className="grid grid-cols-4 items-center gap-2 font-inter text-white"
+                          >
+                            <Label htmlFor="taskName">Task</Label>
+                            <Input
+                              id="taskName"
+                              defaultValue={item.task}
+                              className="col-span-3 h-8"
+                              onChange={(e) => {setTaskEditValue(e.target.value)}}
+                            />
+                            <Button
+                              className="bg-zinc-800 col-span-4 hover:bg-zinc-700"
+                              type="submit" >
+                                Save
+                              </Button>
+                          </form>
                         </div>
                       </PopoverContent>
                     </Popover>
@@ -139,7 +176,12 @@ export default function Home() {
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button className="bg-zinc-800 hover:bg-zinc-700" onClick={(e) => {deleteTask(item.id)}}>
+                          <Button
+                            className="bg-zinc-800 hover:bg-zinc-700"
+                            onClick={(e) => {
+                              deleteTask(item.id);
+                            }}
+                          >
                             Delete
                           </Button>
                           <DialogClose asChild>
