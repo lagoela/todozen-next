@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/popover";
 import { todo } from "node:test";
 import { Label } from "@/components/ui/label";
+import { PopoverClose } from "@radix-ui/react-popover";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -82,9 +83,10 @@ export default function Home() {
     const updatedTodoList = todoList.filter((item) => item.id !== id);
     const editedItem: Todo = {
       id: id,
-      task: itemToEdit[0].task,
+      task: taskEditValue,
       completed: itemToEdit[0].completed,
     };
+    setTodoList([...updatedTodoList, editedItem]);
   };
 
   return (
@@ -98,7 +100,7 @@ export default function Home() {
         </div>
       </header>
       <div className="flex flex-col h-screen items-center justify-center overflow-auto scrollbar-hide">
-        <div className="flex flex-col border-1 border-white rounded-sm w-[40%] min-h-[60%] max-h-[80%]">
+        <div className="flex flex-col border-1 border-white rounded-sm w-[80%] md:w-[50%] min-h-[60%] max-h-[80%]">
           <Table className="max-h-[60%]">
             <TableHeader>
               <TableRow className="hover:bg-inherit">
@@ -107,94 +109,102 @@ export default function Home() {
               </TableRow>
             </TableHeader>
             <TableBody className="scrollbar-hide">
-              {todoList.map((item) => (
-                <TableRow key={item.id} className="text-white hover:bg-inherit">
-                  <TableCell>{item.task}</TableCell>
-                  <TableCell>
-                    {item.completed ? "Completed" : "Incomplete"}
-                  </TableCell>
-                  <TableCell className="w-[48px] ml-0 pl-0">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <PencilSimple
-                          size={16}
-                          className="text-white cursor-pointer"
-                          onClick={(e) => {
-                            editTask(item.id);
-                          }}
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent className="bg-zinc-900">
-                        <div className="grid gap-4">
-                          <div className="space-y-2">
-                            <h4 className="font-medium leading-none text-white">
-                              Edit task
-                            </h4>
-                            <p className="text-sm text-muted-foreground text-zinc-400">
-                              Change task details.
-                            </p>
+              {todoList
+                .sort((a, b) => (a.id > b.id ? 1 : -1))
+                .map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className="text-white hover:bg-inherit"
+                  >
+                    <TableCell>{item.task}</TableCell>
+                    <TableCell>
+                      {item.completed ? "Done" : "Not Done"}
+                    </TableCell>
+                    <TableCell className="w-[48px] ml-0 pl-0">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <PencilSimple
+                            size={16}
+                            className="text-white cursor-pointer"
+                            onClick={(e) => {setTaskEditValue(item.task)}}
+                          />
+                        </PopoverTrigger>
+                        <PopoverContent className="bg-zinc-900">
+                          <div className="grid gap-4">
+                            <div className="space-y-2">
+                              <h4 className="font-medium leading-none text-white">
+                                Edit task
+                              </h4>
+                              <p className="text-sm text-muted-foreground text-zinc-400">
+                                Change task details.
+                              </p>
+                            </div>
+                            <PopoverClose asChild>
+                              <form
+                                onSubmit={(e) => {
+                                  editTask(item.id);
+                                  e.preventDefault();
+                                }}
+                                className="grid grid-cols-4 items-center gap-2 font-inter text-white"
+                              >
+                                <Label htmlFor="taskName">Task</Label>
+                                <Input
+                                  id="taskName"
+                                  defaultValue={item.task}
+                                  className="col-span-3 h-8"
+                                  onChange={(e) => {
+                                    setTaskEditValue(e.target.value);
+                                  }}
+                                />
+                                <Button
+                                  className="bg-zinc-800 col-span-2 hover:bg-zinc-700"
+                                  type="submit"
+                                >
+                                  Save
+                                </Button>
+                              </form>
+                            </PopoverClose>
                           </div>
-                          <form
-                            onSubmit={(e) => {
-                              alert(`Task updated to ${taskEditValue}`);
-                              e.preventDefault();
-                            }}
-                            className="grid grid-cols-4 items-center gap-2 font-inter text-white"
-                          >
-                            <Label htmlFor="taskName">Task</Label>
-                            <Input
-                              id="taskName"
-                              defaultValue={item.task}
-                              className="col-span-3 h-8"
-                              onChange={(e) => {setTaskEditValue(e.target.value)}}
-                            />
+                        </PopoverContent>
+                      </Popover>
+                    </TableCell>
+                    <TableCell className="w-[48px] ml-0 pl-0">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Trash
+                            size={16}
+                            className="text-white cursor-pointer"
+                          />
+                        </DialogTrigger>
+                        <DialogContent className="bg-zinc-900 text-white">
+                          <DialogHeader>
+                            <DialogTitle className="text-white">
+                              Delete Task
+                            </DialogTitle>
+                            <DialogDescription className="text-zinc-400">
+                              Are you sure you want to delete this task?
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
                             <Button
-                              className="bg-zinc-800 col-span-4 hover:bg-zinc-700"
-                              type="submit" >
-                                Save
-                              </Button>
-                          </form>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </TableCell>
-                  <TableCell className="w-[48px] ml-0 pl-0">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Trash
-                          size={16}
-                          className="text-white cursor-pointer"
-                        />
-                      </DialogTrigger>
-                      <DialogContent className="bg-zinc-900 text-white">
-                        <DialogHeader>
-                          <DialogTitle className="text-white">
-                            Delete Task
-                          </DialogTitle>
-                          <DialogDescription className="text-zinc-400">
-                            Are you sure you want to delete this task?
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button
-                            className="bg-zinc-800 hover:bg-zinc-700"
-                            onClick={(e) => {
-                              deleteTask(item.id);
-                            }}
-                          >
-                            Delete
-                          </Button>
-                          <DialogClose asChild>
-                            <Button className="bg-transparent border-1 hover:bg-zinc-700">
-                              Cancel
+                              className="bg-zinc-800 hover:bg-zinc-700"
+                              onClick={(e) => {
+                                deleteTask(item.id);
+                              }}
+                            >
+                              Delete
                             </Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
+                            <DialogClose asChild>
+                              <Button className="bg-transparent border-1 hover:bg-zinc-700">
+                                Cancel
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
           <Separator className="mb-2" />
