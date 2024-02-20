@@ -47,12 +47,10 @@ interface Todo {
   completed: boolean;
 }
 
-const todos: Todo[] = [];
-
 export default function Home() {
   const [taskValue, setTaskValue] = useState<string>("");
   const [taskEditValue, setTaskEditValue] = useState<string>("");
-  const [todoList, setTodoList] = useState<Todo[]>(todos);
+  const [todoList, setTodoList] = useState<Todo[]>([]);
   const [taskPlaceholder, setTaskPlaceholder] =
     useState<string>("Add a new task...");
 
@@ -89,6 +87,19 @@ export default function Home() {
     setTodoList([...updatedTodoList, editedItem]);
   };
 
+  useEffect(() => {
+    const data = window.localStorage.getItem("todoList");
+    console.log(data);
+    if (data) {
+      setTodoList(JSON.parse(data));
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("todoList", JSON.stringify(todoList));
+    console.log(todoList);
+  }, [todoList]);
+
   return (
     <main className="bg-black flex flex-col h-screen">
       <header className="sticky top-0 p-2 m-0 w-full flex flex-row flex-initial border-b-1 border-zinc-800">
@@ -103,7 +114,7 @@ export default function Home() {
         <div className="flex flex-col border-1 border-white rounded-sm w-[80%] md:w-[50%] min-h-[60%] max-h-[80%]">
           <Table className="max-h-[60%]">
             <TableHeader>
-              <TableRow className="hover:bg-inherit">
+              <TableRow className="hover:bg-inherit ">
                 <TableHead>Task</TableHead>
                 <TableHead className="w-[100px]">Completion</TableHead>
               </TableRow>
